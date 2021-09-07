@@ -13,7 +13,7 @@ message_strings = {
 	unlocked_vehicles = "%d vehicles have been UNLOCKED",
 	locked_vehicle = "Vehicle %d has been LOCKED",
 	unlocked_vehicle = "Vehicle %d has been UNLOCKED",
-	cleanup = "Cleaned %d vehicles"
+	cleanup = "Cleaned up %d vehicles"
 }
 announce_title = "[Anti-Steal]"
 steam_ids = {}
@@ -40,12 +40,23 @@ function onPlayerJoin(steam_id, name, peer_id, admin, auth)
 	steam_ids[peer_id] = tostring(steam_id)
 end
 
+function onPlayerLeave(steam_id, name, peer_id, is_admin, is_auth)
+	cleanup(peer_id)
+end
+
 function onCustomCommand(full_message, user_peer_id, is_admin, is_auth, command, ...)
 	command = string.lower(command)
 	local args = table.pack(...)
 	if (command == "?c") or (command == "?clear") or (command == "?clean") or (command == "?cleanup") or (command == "?clr") then
 		if args[1] and is_admin then
-			--Add admin args later
+			targ_pid = tonumber(args[1])
+			if targ_pid == nil then
+				server.announce("[Error]", "Please provide a valid peer ID", user_peer_id)
+				return
+			end
+			cleanup(targ_pid)
+			server.notify(requester, "Admin Cleanup", string.format(message_strings["cleanup"], count), 1)
+			return
 		end
 		cleanup(user_peer_id)
 	end
