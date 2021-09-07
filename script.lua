@@ -1,3 +1,4 @@
+
 -- SETTINGS --
 
 -- GLOBALS --
@@ -11,7 +12,8 @@ message_strings = {
 	locked_vehicles = "%d vehicles have been LOCKED",
 	unlocked_vehicles = "%d vehicles have been UNLOCKED",
 	locked_vehicle = "Vehicle %d has been LOCKED",
-	unlocked_vehicle = "Vehicle %d has been UNLOCKED"
+	unlocked_vehicle = "Vehicle %d has been UNLOCKED",
+	cleanup = "Cleaned %d vehicles"
 }
 announce_title = "[Anti-Steal]"
 steam_ids = {}
@@ -39,7 +41,14 @@ function onPlayerJoin(steam_id, name, peer_id, admin, auth)
 end
 
 function onCustomCommand(full_message, user_peer_id, is_admin, is_auth, command, ...)
+	command = string.lower(command)
 	local args = table.pack(...)
+	if (command == "?c") or (command == "?clear") or (command == "?clean") or (command == "?cleanup") or (command == "?clr") then
+		if args[1] and is_admin then
+			--Add admin args later
+		end
+		cleanup(user_peer_id)
+	end
 	if (command == "?antisteal") or (command == "?as") then
 		if args[1] == nil then
 			server.announce(announce_title, message_strings["usage_antisteal"], user_peer_id)
@@ -94,6 +103,18 @@ end
 
 function untrackVehicle(vehicle_id)
 	g_savedata["user_vehicles"][vehicle_id] = nil
+end
+
+function cleanup(requester)
+	local count = 0
+	for vehicle_id, steam_id in pairs(g_savedata["user_vehicles"]) do
+		if steam_id == steam_ids[requester] then
+			server.despawnVehicle(vehicle_id, true)
+			untrackVehicle(vehicle_id)
+			count = count + 1
+		end
+	end
+	server.notify(requester, "Cleanup", string.format(message_strings["cleanup"], count), 1)
 end
 
 function lockAllVehicles(requester)
