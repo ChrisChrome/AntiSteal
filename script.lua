@@ -36,7 +36,7 @@ function onVehicleSpawn(vehicle_id, peer_id, x, y, z, cost)
 		end
 		trackVehicle(vehicle_id, peer_id)
 		lockVehicle(peer_id, vehicle_id)
-		server.setVehicleTooltip(vehicle_id, "Name: "..server.getVehicleName(vehicle_id).."\nID: "..tostring(vehicle_id).."\n("..p.id..") ".."Owner: "..p.name)
+		server.setVehicleTooltip(vehicle_id, "Name: "..server.getVehicleName(vehicle_id).."\nID: "..tostring(vehicle_id).."\nOwner: "..("..p.id..")".."..p.name)
 		--server.setVehicleTooltip(vehicle_id, "ID: "..tostring(vehicle_id))
 	end
 end
