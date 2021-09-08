@@ -27,8 +27,14 @@ end
 function onVehicleSpawn(vehicle_id, peer_id, x, y, z, cost)
 	-- Only track user spawned vehicles
 	if peer_id ~= -1 then
+		for i,e in pairs(server.getPlayers()) do
+			if e.id == peer_id then
+				local p = e
+			end
+		end
 		trackVehicle(vehicle_id, peer_id)
 		lockVehicle(peer_id, vehicle_id)
+		server.setVehicleTooltip(vehicle_id, "Name: "..server.getVehicleName(vehicle_id).."\nID: "..tostring(vehicle_id).."\nOwner: "..p.name.."("..p.id..")")
 	end
 end
 
