@@ -13,7 +13,8 @@ message_strings = {
 	unlocked_vehicles = "%d vehicles have been UNLOCKED",
 	locked_vehicle = "Vehicle %d has been LOCKED",
 	unlocked_vehicle = "Vehicle %d has been UNLOCKED",
-	cleanup = "Cleaned up %d vehicles"
+	cleanup = "Cleaned up %d vehicles",
+	despawn = "Despawned vehicle %d"
 }
 announce_title = "[Anti-Steal]"
 steam_ids = {}
@@ -27,14 +28,16 @@ end
 function onVehicleSpawn(vehicle_id, peer_id, x, y, z, cost)
 	-- Only track user spawned vehicles
 	if peer_id ~= -1 then
+		local p = {}
 		for i,e in pairs(server.getPlayers()) do
 			if e.id == peer_id then
-				local p = e
+				p = e
 			end
 		end
 		trackVehicle(vehicle_id, peer_id)
 		lockVehicle(peer_id, vehicle_id)
-		server.setVehicleTooltip(vehicle_id, "Name: "..server.getVehicleName(vehicle_id).."\nID: "..tostring(vehicle_id).."\nOwner: "..p.name.."("..p.id..")")
+		server.setVehicleTooltip(vehicle_id, "Name: "..server.getVehicleName(vehicle_id).."\nID: "..tostring(vehicle_id).."\n("..p.id..") ".."Owner: "..p.name)
+		--server.setVehicleTooltip(vehicle_id, "ID: "..tostring(vehicle_id))
 	end
 end
 
@@ -53,6 +56,20 @@ end
 function onCustomCommand(full_message, user_peer_id, is_admin, is_auth, command, ...)
 	command = string.lower(command)
 	local args = table.pack(...)
+	if (command == "?d") or (command == "?despawn") then
+		targ_vid = tonumber(args[1])
+		if targ_vid == nil then
+			server.announce("[Error]", "Please provide a valid vehicle ID", user_peer_id)
+			return
+		end
+		if is_admin then
+			server.despawnVehicle(targ_vid, true)
+			untrackVehicle(targ_vid)
+			server.notify(user_peer_id, "Admin Despawn", string.format(message_strings["despawn"], targ_vid), 1)
+			return
+		end
+		despawn(user_peer_id, targ_vid)
+	end
 	if (command == "?c") or (command == "?clear") or (command == "?clean") or (command == "?cleanup") or (command == "?clr") then
 		if args[1] and is_admin then
 			targ_pid = tonumber(args[1])
@@ -120,6 +137,14 @@ end
 
 function untrackVehicle(vehicle_id)
 	g_savedata["user_vehicles"][vehicle_id] = nil
+end
+
+function despawn(requester, vid)
+	if g_savedata["user_vehicles"][vid] == steam_ids[requester] then
+		server.despawnVehicle(vehicle_id, true)
+		untrackVehicle(vehicle_id)
+		server.notify(requester, "Despawn", string.format(message_strings["despawn"], vid), 1)
+	end
 end
 
 function cleanup(requester)
