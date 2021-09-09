@@ -78,6 +78,7 @@ function onCustomCommand(full_message, user_peer_id, is_admin, is_auth, command,
 				return
 			end
 			cleanup(targ_pid)
+			if count == nil then count = 0 end
 			server.notify(requester, "Admin Cleanup", string.format(message_strings["cleanup"], count), 1)
 			return
 		end
